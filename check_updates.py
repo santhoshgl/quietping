@@ -11,13 +11,27 @@ GMAIL_APP_PASSWORD = os.environ["GMAIL_APP_PASSWORD"]
 TO_EMAIL = os.environ.get("TO_EMAIL", GMAIL_USER)
 
 def fetch_updates():
-    r = requests.get(API_URL, timeout=20)
-    r.raise_for_status()
-    data = r.json()["data"][:5]
-    return [item["attributes"]["update"].strip() for item in data]
+    resp = requests.get(API_URL, timeout=10)
+    resp.raise_for_status()
+
+    payload = resp.json()
+
+    updates = payload[0]["data"][0]["attributes"]["update"]
+
+    top_five = []
+    for item in updates[:5]:
+        text = item.get("data", "").strip()
+        if text:
+            top_five.append(text)
+
+    return top_five
+
 
 def send_email(updates):
-    body = "\n\n".join(f"{i+1}. {u}" for i, u in enumerate(updates))
+    body = "\n\n".join(
+    f"{i+1}. {update}"
+    for i, update in enumerate(updates)
+)
 
     msg = MIMEMultipart()
     msg["From"] = GMAIL_USER
