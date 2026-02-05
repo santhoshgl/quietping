@@ -16,7 +16,13 @@ def fetch_updates():
 
     payload = resp.json()
 
-    updates = payload[0]["data"][0]["attributes"]["update"]
+    # payload is a dict: { data: [...], meta: {...} }
+    data = payload.get("data", [])
+    if not data:
+        return []
+
+    attributes = data[0].get("attributes", {})
+    updates = attributes.get("update", [])
 
     top_five = []
     for item in updates[:5]:
@@ -25,6 +31,7 @@ def fetch_updates():
             top_five.append(text)
 
     return top_five
+
 
 
 def send_email(updates):
